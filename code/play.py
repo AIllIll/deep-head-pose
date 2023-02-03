@@ -14,7 +14,6 @@ import hopenet, utils
 
 from mark_detector import MarkDetector
 
-# python code/play.py --snapshot ./model/hopenet_robust_alpha1.pkl --face_model ./mmod_human_face_detector.dat --video 0
 
 
 def parse_args():
@@ -70,6 +69,7 @@ if __name__ == '__main__':
     transforms.CenterCrop(224), transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
 
+
     gpu = 0
     model.cuda(gpu)
 
@@ -80,6 +80,7 @@ if __name__ == '__main__':
     total = 0
 
     idx_tensor = [idx for idx in range(66)]
+    idx_tensor = torch.FloatTensor(idx_tensor) # cpu
     idx_tensor = torch.FloatTensor(idx_tensor).cuda(gpu)
 
     video = cv2.VideoCapture(video_path)
@@ -157,7 +158,33 @@ if __name__ == '__main__':
             # utils.plot_pose_cube(frame, yaw_predicted, pitch_predicted, roll_predicted, (x_min + x_max) / 2, (y_min + y_max) / 2, size = bbox_width)
             utils.draw_axis(frame, yaw_predicted, pitch_predicted, roll_predicted, tdx = (x_min + x_max) / 2, tdy= (y_min + y_max) / 2, size = bbox_height/2)
             # Plot expanded bounding box
-            # cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0,255,0), 1)
+            cv2.rectangle(frame, (x_min, y_min), (x_max, y_max), (0,255,0), 1)
+            print( yaw_predicted, pitch_predicted, roll_predicted)
+            cv2.putText(
+                frame,
+                "yaw:  "+str(yaw_predicted.item()),
+                (10,30),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.5,
+                (209, 80, 0, 255), #font color,
+                2)
+            cv2.putText(
+                frame,
+                "pitch:" + str(pitch_predicted.item()),
+                (10, 60),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.5,
+                (209, 80, 0, 255),  # font color,
+                2)
+            cv2.putText(
+                frame,
+                "roll: " + str(
+                    roll_predicted.item()),
+                (10, 90),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.5,
+                (209, 80, 0, 255),  # font color,
+                2)
 
         out.write(frame)
         cv2.imshow("Preview", frame)
